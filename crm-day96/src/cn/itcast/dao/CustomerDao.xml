@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.itcast.dao.CustomerDao">
+	<sql id="query">
+
+		<if test="custName!=null and custName!=''">
+			c.`cust_name` LIKE "%${custName}%"
+		</if>
+		<if test="custSource!=null and custSource!=''">
+			AND
+			c.cust_source=#{custSource}
+		</if>
+		<if test="custLevel!=null and custLevel!=''">
+			and
+			c.`cust_level`=#{custLevel}
+		</if>
+	<if test="custIndustry!=null and custIndustry!='' ">
+		and
+		c.`cust_industry`=#{custIndustry}
+	</if>
+	</sql>
+
+	<select id="getBaseDictList" parameterType="string"
+		resultType="cn.itcast.pojo.BaseDict">
+		SELECT * from base_dict WHERE dict_type_code=#{typeCode}
+	</select>
+	
+	
+	<select id="getCustList" parameterType="cn.itcast.pojo.QueryVo" resultType="cn.itcast.pojo.Customer">
+	SELECT 
+		c.cust_id,
+		c.cust_name,
+		c.cust_phone,
+		c.cust_mobile,
+		d1.dict_item_name AS cust_source,
+		d2.dict_item_name AS cust_level,
+		d3.dict_item_name AS cust_industry
+	FROM
+		customer c
+		LEFT JOIN base_dict d1 ON c.cust_source = d1.dict_item_code
+		LEFT JOIN base_dict d2 ON c.cust_level = d2.dict_item_code
+		LEFT JOIN base_dict d3 ON c.cust_industry = d3.dict_item_code
+	<where>
+		<if test="custName!=null and custName!=''">
+		 and 	c.cust_name LIKE "%${custName}%"
+		</if>
+		<if test="custSource!=null and custSource!=''">
+		and	c.cust_source=#{custSource}
+		</if>
+		<if test="custLevel!=null and custLevel!=''">
+		and	c.cust_level=#{custLevel}
+		</if>
+		<if test="custIndustry!=null and custIndustry!=''">
+		and	c.cust_industry=#{custIndustry}
+		</if>
+	</where>
+		LIMIT #{start},#{size}
+	</select>
+	
+	
+	
+	<select id="getCustomerCount" parameterType="cn.itcast.pojo.QueryVo"
+		resultType="int">
+		SELECT count(*)
+		FROM
+		customer c
+		LEFT JOIN base_dict b ON c.cust_source = b.dict_id
+		LEFT JOIN
+		base_dict f ON c.cust_industry = f.dict_id
+		LEFT JOIN base_dict d ON
+		c.cust_level = d.dict_id
+	<where>	
+		<include refid="query" />
+	</where>
+	</select>
+ 
+ <!-- 修改的数据会显 -->
+ <select id="findCustomerById" parameterType="Long" resultType="cn.itcast.pojo.Customer">
+ select * from customer where cust_id=#{custId}
+ </select>
+ 
+ 
+ <!--保存修改客户信息  -->
+<update id="updateCustomerById" parameterType="cn.itcast.pojo.Customer">
+update customer <set>
+<if test="cust_name!=null and cust_name!=''">
+cust_name=#{cust_name},
+</if>
+<if test="cust_source!=null and cust_source!=''">
+cust_source=#{cust_source},
+</if>
+<if test="cust_industry!=null and cust_industry!=''">
+cust_industry=#{cust_industry},
+</if>
+<if test="cust_level!=null and cust_level!=''">
+cust_level=#{cust_level},
+</if>
+<if test="cust_linkman!=null and cust_linkman=''">
+cust_linkman=#{cust_linkman},
+</if>
+<if test="cust_phone!=null and cust_phone!=''">
+cust_phone=#{cust_phone},
+</if>
+<if test="cust_mobile!=null and cust_mobile!=''">
+cust_mobile=#{cust_mobile},
+</if>
+<if test="cust_zipcode!=null and cust_zipcode=''">
+cust_zipcode=#{cust_zipcode},
+</if>
+<if test="cust_address !=null and cust_address!=''">
+cust_address=#{cust_address},
+</if>
+</set>
+where 
+cust_id=#{cust_id}
+</update>
+
+<!--删除  -->
+<delete id="deleteCustomerById" parameterType="Long">
+delete from customer where cust_id=#{cust_id}
+
+</delete>
+</mapper>
